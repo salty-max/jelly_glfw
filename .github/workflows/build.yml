@@ -15,29 +15,87 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      # Checkout the code
+      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Set up CMake
-      - name: Install dependencies
+      # Install dependencies and set up Glad and GLFW
+      - name: Set up dependencies on Ubuntu
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt update && sudo apt install -y cmake build-essential libglfw3-dev libfreetype6-dev
+        run: |
+          sudo apt update
+          sudo apt install -y cmake build-essential xorg-dev python3-pip git
+          pip3 install jinja2
+          mkdir -p deps/include deps/lib
+          git clone https://github.com/Dav1dde/glad.git deps/glad
+          python3 -m glad --api=gl:core=3.3 --out-path=deps/glad_build
+          cp -r deps/glad_build/include/glad deps/include/
+          cp -r deps/glad_build/include/KHR deps/include/
+          cp deps/glad_build/src/gl.c deps/lib/gl.c
+          git clone https://github.com/glfw/glfw.git deps/glfw
+          cmake -S deps/glfw -B deps/glfw/build -DBUILD_SHARED_LIBS=OFF
+          cmake --build deps/glfw/build --config Release
+          cp deps/glfw/build/src/libglfw3.a deps/lib/libglfw3.a
+          cp -r deps/glfw/include/GLFW deps/include/
 
-      - name: Install dependencies on macOS
+      - name: Set up dependencies on macOS
         if: matrix.os == 'macos-latest'
-        run: brew install cmake glfw freetype
+        run: |
+          brew install cmake python3 git
+          pip3 install jinja2
+          mkdir -p deps/include deps/lib
+          git clone https://github.com/Dav1dde/glad.git deps/glad
+          python3 -m glad --api=gl:core=3.3 --out-path=deps/glad_build
+          cp -r deps/glad_build/include/glad deps/include/
+          cp -r deps/glad_build/include/KHR deps/include/
+          cp deps/glad_build/src/gl.c deps/lib/gl.c
+          git clone https://github.com/glfw/glfw.git deps/glfw
+          cmake -S deps/glfw -B deps/glfw/build -DBUILD_SHARED_LIBS=OFF
+          cmake --build deps/glfw/build --config Release
+          cp deps/glfw/build/src/libglfw3.a deps/lib/libglfw3.a
+          cp -r deps/glfw/include/GLFW deps/include/
 
-      - name: Install dependencies on Windows
+      - name: Set up dependencies on Windows
         if: matrix.os == 'windows-latest'
-        run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
+        run: |
+          # Install Chocolatey
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-      # Configure the build
+          # Install CMake and Python
+          choco install cmake --installargs '"ADD_CMAKE_TO_PATH=System"' -y
+          choco install python --version=3.11.5 -y
+          refreshenv
+
+          # Install Python dependencies
+          pip install jinja2
+
+          # Set up dependencies
+          mkdir deps\include deps\lib
+          git clone https://github.com/Dav1dde/glad.git deps\glad
+          python -m glad --api=gl:core=3.3 --out-path=deps\glad_build
+          xcopy /E /I deps\glad_build\include\glad deps\include\glad >nul
+          xcopy /E /I deps\glad_build\include\KHR deps\include\KHR >nul
+          copy deps\glad_build\src\gl.c deps\lib\gl.c >nul
+          git clone https://github.com/glfw/glfw.git deps\glfw
+          cmake -S deps\glfw -B deps\glfw\build -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=OFF
+          cmake --build deps\glfw\build --config Release
+          copy deps\glfw\build\src\libglfw3.a deps\lib\libglfw3.a >nul
+          xcopy /E /I deps\glfw\include\GLFW deps\include\GLFW >nul
+
+      # Configure the main project with CMake
       - name: Configure with CMake
-        run: cmake -B build -G "Unix Makefiles"
-        shell: bash
+        run: |
+          if [ $RUNNER_OS = "Windows" ]; then
+            cmake -B build -G "MinGW Makefiles"
+          elif [ $RUNNER_OS = "macOS" ]; then
+            cmake -B build -G "Unix Makefiles"
+          else
+            cmake -B build -G "Unix Makefiles"
+          fi
 
-      # Build the project
+      # Build the main project
       - name: Build the project
         run: cmake --build build --config Release
 
@@ -46,4 +104,3 @@ jobs:
         if: always()
         run: |
           cd build && ctest
-        shell: bash

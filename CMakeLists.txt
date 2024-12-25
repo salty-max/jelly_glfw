@@ -9,22 +9,22 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Include directories
-include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/deps/include)
 
 # Add source files
 file(GLOB SOURCES 
-    ${CMAKE_SOURCE_DIR}/deps/src/glad.c
     ${CMAKE_SOURCE_DIR}/src/*.cpp
 )
 
 # Add Glad Library
-add_library(glad STATIC deps/src/glad.c)
+add_library(glad STATIC ${CMAKE_SOURCE_DIR}/deps/lib/gl.c)
 target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/deps/include)
 
-# Add GLFW library (static import)
+# Add GLFW library
+# GLFW is dynamically built during the workflow and referenced here
 add_library(glfw STATIC IMPORTED)
 set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/lib/libglfw3.a)
+target_include_directories(glfw INTERFACE ${CMAKE_SOURCE_DIR}/deps/include)
 
 # Define the executable
 add_executable(jelly ${SOURCES})
