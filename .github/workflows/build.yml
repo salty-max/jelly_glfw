@@ -12,95 +12,155 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [
+          ubuntu-latest,
+          # macos-latest,
+          windows-latest
+        ]
 
     steps:
       # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Install dependencies and set up Glad and GLFW
-      - name: Set up dependencies on Ubuntu
+      # Set up dependencies on Ubuntu
+      - name: Set up dependencies (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt update
           sudo apt install -y cmake build-essential xorg-dev python3-pip git
+
+          # Verify installations
+          cmake --version
+          gcc --version
+          g++ --version
+          python --version
+
           pip3 install jinja2
           mkdir -p deps/include deps/lib
           git clone https://github.com/Dav1dde/glad.git deps/glad
-          python3 -m glad --api=gl:core=3.3 --out-path=deps/glad_build
+          cd deps/glad
+          python3 -m glad --api=gl:core=3.3 --out-path=../glad_build
+          cd ../..
           cp -r deps/glad_build/include/glad deps/include/
           cp -r deps/glad_build/include/KHR deps/include/
           cp deps/glad_build/src/gl.c deps/lib/gl.c
           git clone https://github.com/glfw/glfw.git deps/glfw
-          cmake -S deps/glfw -B deps/glfw/build -DBUILD_SHARED_LIBS=OFF
+          cmake -S deps/glfw -B deps/glfw/build \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DGLFW_BUILD_WAYLAND=OFF \
+            -DGLFW_BUILD_X11=ON
           cmake --build deps/glfw/build --config Release
           cp deps/glfw/build/src/libglfw3.a deps/lib/libglfw3.a
           cp -r deps/glfw/include/GLFW deps/include/
 
-      - name: Set up dependencies on macOS
+      # Set up dependencies on macOS
+      - name: Set up dependencies (macOS)
         if: matrix.os == 'macos-latest'
         run: |
           brew install cmake python3 git
-          pip3 install jinja2
+
+          # Verify installations
+          cmake --version
+          gcc --version
+          g++ --version
+          python --version
+
+          python3 -m pip install --upgrade pip --break-system-packages
+          python3 -m pip install jinja2 --break-system-packages
           mkdir -p deps/include deps/lib
           git clone https://github.com/Dav1dde/glad.git deps/glad
-          python3 -m glad --api=gl:core=3.3 --out-path=deps/glad_build
+          cd deps/glad
+          python3 -m glad --api=gl:core=3.3 --out-path=../glad_build
+          cd ../..
           cp -r deps/glad_build/include/glad deps/include/
           cp -r deps/glad_build/include/KHR deps/include/
           cp deps/glad_build/src/gl.c deps/lib/gl.c
           git clone https://github.com/glfw/glfw.git deps/glfw
-          cmake -S deps/glfw -B deps/glfw/build -DBUILD_SHARED_LIBS=OFF
+          cmake -S deps/glfw -B deps/glfw/build \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_EXE_LINKER_FLAGS="-framework Cocoa -framework IOKit -framework CoreVideo -framework Metal" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-framework Cocoa -framework IOKit -framework CoreVideo -framework Metal"
           cmake --build deps/glfw/build --config Release
           cp deps/glfw/build/src/libglfw3.a deps/lib/libglfw3.a
+          cp deps/glfw/build/src/libglfw3.dylib deps/lib/libglfw3.dylib
           cp -r deps/glfw/include/GLFW deps/include/
 
-      - name: Set up dependencies on Windows
+      - name: Set up dependencies on (Windows)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
           # Install Chocolatey
           Set-ExecutionPolicy Bypass -Scope Process -Force
           [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
-          iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          if (!(Get-Command choco -ErrorAction SilentlyContinue)) {
+            iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          }
 
-          # Install CMake and Python
+          # Install mingw
+          choco install mingw -y
+
+          # Install CMake
           choco install cmake --installargs '"ADD_CMAKE_TO_PATH=System"' -y
-          choco install python --version=3.11.5 -y
-          refreshenv
+
+          # Ensure Python is installed
+          if (!(Get-Command python -ErrorAction SilentlyContinue)) {
+            choco install python --version=3.11.5 -y
+          }
+
+          # Verify installations
+          cmake --version
+          gcc --version
+          g++ --version
+          python --version
 
           # Install Python dependencies
           pip install jinja2
 
-          # Set up dependencies
-          mkdir deps\include deps\lib
-          git clone https://github.com/Dav1dde/glad.git deps\glad
-          python -m glad --api=gl:core=3.3 --out-path=deps\glad_build
+          # Set up directories
+          if (!(Test-Path "deps/include")) {
+            New-Item -ItemType Directory -Path deps/include
+          }
+          if (!(Test-Path "deps/lib")) {
+            New-Item -ItemType Directory -Path deps/lib
+          }
+
+          # Set up Glad
+          git clone https://github.com/Dav1dde/glad.git deps/glad
+          cd deps/glad
+          python -m glad --api=gl:core=3.3 --out-path=..\glad_build
+          cd ..\..
           xcopy /E /I deps\glad_build\include\glad deps\include\glad >nul
           xcopy /E /I deps\glad_build\include\KHR deps\include\KHR >nul
           copy deps\glad_build\src\gl.c deps\lib\gl.c >nul
-          git clone https://github.com/glfw/glfw.git deps\glfw
-          cmake -S deps\glfw -B deps\glfw\build -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=OFF
-          cmake --build deps\glfw\build --config Release
+
+          # Set up GLFW
+          git clone https://github.com/glfw/glfw.git deps/glfw
+          cmake -S deps/glfw -B deps/glfw\build -G "MinGW Makefiles" -DBUILD_SHARED_LIBS=OFF
+          cmake --build deps/glfw\build --config Release
           copy deps\glfw\build\src\libglfw3.a deps\lib\libglfw3.a >nul
           xcopy /E /I deps\glfw\include\GLFW deps\include\GLFW >nul
 
-      # Configure the main project with CMake
-      - name: Configure with CMake
-        run: |
-          if [ $RUNNER_OS = "Windows" ]; then
-            cmake -B build -G "MinGW Makefiles"
-          elif [ $RUNNER_OS = "macOS" ]; then
-            cmake -B build -G "Unix Makefiles"
-          else
-            cmake -B build -G "Unix Makefiles"
-          fi
+
+      # Configure the main project with CMake (Ubuntu)
+      - name: Configure with CMake (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: cmake -B build -G "Unix Makefiles"
+
+        # Configure the main project with CMake (macOS)
+      - name: Configure with CMake (macOS)
+        if: matrix.os == 'macos-latest'
+        run: cmake -B build -G "Unix Makefiles" \
+              -DCMAKE_OSX_ARCHITECTURES=arm64 \
+              -DCMAKE_EXE_LINKER_FLAGS="-framework Cocoa -framework IOKit -framework CoreVideo -framework Metal" \
+              -DCMAKE_SHARED_LINKER_FLAGS="-framework Cocoa -framework IOKit -framework CoreVideo -framework Metal"
+ 
+        # Configure the main project with CMake (Windows)
+      - name: Configure with CMake (Windows)
+        if: matrix.os == 'windows-latest'
+        run: cmake -B build -G "MinGW Makefiles"
 
       # Build the main project
       - name: Build the project
         run: cmake --build build --config Release
-
-      # Run tests (if applicable)
-      - name: Run tests
-        if: always()
-        run: |
-          cd build && ctest

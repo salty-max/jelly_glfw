@@ -23,7 +23,11 @@ target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/deps/include)
 # Add GLFW library
 # GLFW is dynamically built during the workflow and referenced here
 add_library(glfw STATIC IMPORTED)
-set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/lib/libglfw3.a)
+if (APPLE)
+    set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/lib/libglfw3.a ${CMAKE_SOURCE_DIR}/deps/lib/libglfw3.dylib)
+else ()
+    set_target_properties(glfw PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/deps/lib/libglfw3.a)
+endif()
 target_include_directories(glfw INTERFACE ${CMAKE_SOURCE_DIR}/deps/include)
 
 # Define the executable
@@ -36,7 +40,8 @@ elseif (APPLE)
     find_library(COCOA_LIBRARY Cocoa REQUIRED)
     find_library(IOKIT_LIBRARY IOKit REQUIRED)
     find_library(COREVIDEO_LIBRARY CoreVideo REQUIRED)
-    target_link_libraries(jelly glfw glad ${COCOA_LIBRARY} ${IOKIT_LIBRARY} ${COREVIDEO_LIBRARY})
+    find_library(METAL_LIBRARY Metal REQUIRED)
+    target_link_libraries(jelly glfw glad ${COCOA_LIBRARY} ${IOKIT_LIBRARY} ${COREVIDEO_LIBRARY} ${METAL_LIBRARY})
 else ()
     find_package(X11 REQUIRED)
     target_link_libraries(jelly glfw glad X11 pthread)
