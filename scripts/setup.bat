@@ -10,6 +10,7 @@ echo Cleaning existing deps folder...
 if exist deps (
     rmdir /S /Q deps >> %DEBUG_LOG% 2>&1
 )
+
 mkdir deps >> %DEBUG_LOG% 2>&1
 mkdir deps\include >> %DEBUG_LOG% 2>&1
 mkdir deps\include\glad >> %DEBUG_LOG% 2>&1
@@ -122,6 +123,15 @@ echo Copying GLFW library...
 copy /Y deps\glfw\build\src\libglfw3.a deps\lib\libglfw3.a >> %DEBUG_LOG% 2>&1
 if not exist deps\lib\libglfw3.a (
     echo Error: GLFW library copy failed! Check debug.log for details.
+    pause
+    exit /b 1
+)
+
+:: Download stb_image.h
+echo Downloading stb_image.h...
+curl -L https://raw.githubusercontent.com/nothings/stb/master/stb_image.h -o deps\include\stb_image.h
+if not exist deps\include\stb_image.h (
+    echo Error: Failed to download stb_image.h!
     pause
     exit /b 1
 )

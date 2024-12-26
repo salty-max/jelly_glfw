@@ -4,25 +4,24 @@ project(jelly)
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 23)
 
+# Force 64-bit architecture
+if (WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64")
+elseif (UNIX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64")
+endif()
+
 # Set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+set (SANDBOX_DIR ${CMAKE_SOURCE_DIR}/sandbox)
+
 # Include directories for the jelly library
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/deps/include)
-
-# Convert shader files to C headers using xxd
-file(GLOB SHADER_FILES
-    ${CMAKE_SOURCE_DIR}/shaders/*.vert
-    ${CMAKE_SOURCE_DIR}/shaders/*.frag
-)
-
-# List of shaders
-set(SHADER_FILES 
-    ${SHADERS_DIR}/default_vertex_shader.vert
-    ${SHADERS_DIR}/default_fragment_shader.frag
-)
 
 # Add source files for the jelly library
 file(GLOB JELLY_SOURCES 
@@ -55,7 +54,10 @@ target_include_directories(glfw INTERFACE ${CMAKE_SOURCE_DIR}/deps/include)
 target_link_libraries(jelly glad glfw)
 
 # Define the sandbox executable
-add_executable(sandbox ${CMAKE_SOURCE_DIR}/sandbox/main.cpp)
+add_executable(sandbox ${SANDBOX_DIR}/main.cpp)
+
+# Copy textures to the build directory
+file(COPY ${SANDBOX_DIR}/textures DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
 # Link the sandbox executable with the jelly library and dependencies
 if (WIN32)

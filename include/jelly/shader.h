@@ -17,8 +17,19 @@
 constexpr const char *default_vertex_shader = R"(
     #version 330 core
     layout (location = 0) in vec3 aPos;
+    layout (location = 1) in vec3 aColor;
+    layout (location = 2) in vec2 aTexCoords;
+
+    out vec3 color;
+    out vec2 texCoords;
+
+    uniform float scale;
+    uniform mat4 projection;
+
     void main() {
-        gl_Position = vec4(aPos, 1.0);
+        gl_Position = projection * vec4(aPos + aPos * scale, 1.0);
+        color = aColor;
+        texCoords = aTexCoords;
     }
 )";
 
@@ -28,8 +39,14 @@ constexpr const char *default_vertex_shader = R"(
 constexpr const char *default_fragment_shader = R"(
     #version 330 core
     out vec4 FragColor;
+
+    in vec3 color;
+    in vec2 texCoords;
+
+    uniform sampler2D tex0;
+
     void main() {
-        FragColor = vec4(1.0, 0.5, 0.2, 1.0);
+      FragColor = texture(tex0, texCoords) * vec4(color, 1.0);
     }
 )";
 
@@ -39,6 +56,8 @@ constexpr const char *default_fragment_shader = R"(
  */
 class Shader {
   GLuint m_id; ///< Shader program ID
+
+  void compileErrors(unsigned int shader, const char *type);
 
 public:
   /**
@@ -50,9 +69,15 @@ public:
          const char *fragment_source = nullptr);
 
   /**
+   * @brief Returns the ID of the shader program.
+   * @return The ID of the shader program.
+   */
+  GLuint GetID();
+
+  /**
    * @brief Activates the shader program.
    */
-  void Activate();
+  void Activate() const;
 
   /**
    * @brief Deletes the shader program.

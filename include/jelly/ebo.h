@@ -28,12 +28,12 @@ public:
   /**
    * @brief Binds the EBO.
    */
-  void Bind();
+  void Bind() const;
 
   /**
    * @brief Unbinds the EBO.
    */
-  void Unbind();
+  void Unbind() const;
 
   /**
    * @brief Deletes the EBO.

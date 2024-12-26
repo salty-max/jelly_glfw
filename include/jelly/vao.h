@@ -30,14 +30,14 @@ public:
    *
    * This method binds the VAO, making it the current VAO in use.
    */
-  void Bind();
+  void Bind() const;
 
   /**
    * @brief Unbinds the VAO.
    *
    * This method unbinds the VAO, making no VAO currently bound.
    */
-  void Unbind();
+  void Unbind() const;
 
   /**
    * @brief Deletes the VAO.
@@ -54,7 +54,8 @@ public:
    *
    * This method links a VBO to the VAO at the specified layout location.
    */
-  void LinkVBO(VBO vbo, GLuint layout);
+  void LinkAttrib(VBO vbo, GLuint layout, GLuint numComponents, GLenum type,
+                  GLsizeiptr stride, GLvoid *offset);
 };
 
 #endif // VAO_H

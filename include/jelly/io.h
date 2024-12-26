@@ -22,7 +22,7 @@
  * @return A pointer to a null-terminated string containing the file contents,
  *         or NULL if the file could not be read.
  */
-const char *read_file(const char *path);
+std::string read_file(const char *path);
 
 /**
  * @brief Writes data to a file.

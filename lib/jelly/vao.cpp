@@ -2,16 +2,16 @@
 
 VAO::VAO() { glGenVertexArrays(1, &m_id); }
 
-void VAO::Bind() { glBindVertexArray(m_id); }
+void VAO::Bind() const { glBindVertexArray(m_id); }
 
-void VAO::Unbind() { glBindVertexArray(0); }
+void VAO::Unbind() const { glBindVertexArray(0); }
 
 void VAO::Delete() { glDeleteVertexArrays(1, &m_id); }
 
-void VAO::LinkVBO(VBO vbo, GLuint layout) {
+void VAO::LinkAttrib(VBO vbo, GLuint layout, GLuint numComponents, GLenum type,
+                     GLsizeiptr stride, GLvoid *offset) {
   vbo.Bind();
-  glVertexAttribPointer(layout, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat),
-                        (GLvoid *)0);
+  glVertexAttribPointer(layout, numComponents, type, GL_FALSE, stride, offset);
   glEnableVertexAttribArray(layout);
   vbo.Unbind();
 }

@@ -26,14 +26,14 @@ public:
    *
    * This method binds the VBO to the current OpenGL context.
    */
-  void Bind();
+  void Bind() const;
 
   /**
    * @brief Unbinds the VBO.
    *
    * This method unbinds the VBO from the current OpenGL context.
    */
-  void Unbind();
+  void Unbind() const;
 
   /**
    * @brief Deletes the VBO.

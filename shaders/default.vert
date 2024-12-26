@@ -1,13 +1,16 @@
 #version 330 core
-layout (location = 0) in vec3 a_pos;
-layout (location = 1) in vec2 a_uvs;
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aColor;
+layout (location = 2) in vec2 aTexCoords;
 
-out vec2 uvs;
+out vec3 color;
+out vec2 texCoords;
 
-uniform mat4 u_projection;
-uniform mat4 u_model;
+uniform float scale;
+uniform mat4 projection;
 
 void main() {
-    uvs = a_uvs;
-    gl_Position = u_projection * u_model * vec4(a_pos, 1.0);
+    gl_Position = projection * vec4(aPos + aPos * scale, 1.0);
+    color = aColor;
+    texCoords = aTexCoords;
 }

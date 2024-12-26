@@ -1,28 +1,21 @@
 #include "jelly/io.h"
 
-const char *read_file(const char *path) {
+std::string read_file(const char *path) {
   try {
     std::ifstream file(path, std::ios::in | std::ios::binary);
     if (!file.is_open()) {
       std::cerr << "Error: Unable to open file for reading: " << path
                 << std::endl;
-      return nullptr;
+      return "";
     }
 
     std::ostringstream buffer;
     buffer << file.rdbuf();
-    std::string content = buffer.str();
-
-    // Dynamically allocate memory for the content
-    char *result = new char[content.size() + 1];
-    std::copy(content.begin(), content.end(), result);
-    result[content.size()] = '\0';
-    std::cout << "Data read from file: " << result << std::endl;
-    return result;
+    return buffer.str();
   } catch (const std::exception &e) {
     std::cerr << "Error: Exception while reading file: " << e.what()
               << std::endl;
-    return nullptr;
+    return "";
   }
 }
 
