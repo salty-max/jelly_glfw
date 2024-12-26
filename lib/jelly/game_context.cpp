@@ -2,16 +2,25 @@
 
 GameContext *GameContext::m_instance = nullptr;
 
-void GameContext::init(int windowWidth, int windowHeight, const char *title) {
+void GameContext::init(int windowWidth, int windowHeight, const char *title,
+                       bool debugOverlayEnabled) {
   std::cout << "\033[34mJelly Engine v0.1\033[0m" << std::endl;
 
   if (m_instance == nullptr) {
-    m_instance = new GameContext(windowWidth, windowHeight, title);
+    m_instance =
+        new GameContext(windowWidth, windowHeight, title, debugOverlayEnabled);
+  }
+
+  if (debugOverlayEnabled) {
+    m_instance->m_debugOverlay.init(m_instance->getWindow());
   }
 }
 
 void GameContext::shutdown() {
   if (m_instance != nullptr) {
+    if (m_instance->isDebugOverlayEnabled()) {
+      m_instance->m_debugOverlay.shutdown();
+    }
     delete m_instance;
     m_instance = nullptr;
   }
@@ -26,8 +35,10 @@ GameContext &GameContext::getInstance() {
   return *m_instance;
 }
 
-GameContext::GameContext(int windowWidth, int windowHeight, const char *title)
-    : m_renderer(windowWidth, windowHeight) {
+GameContext::GameContext(int windowWidth, int windowHeight, const char *title,
+                         bool debugOverlayEnabled)
+    : m_renderer(windowWidth, windowHeight),
+      m_debugOverlayEnabled(debugOverlayEnabled) {
   if (!glfwInit()) {
     std::cerr << "Failed to initialize GLFW" << std::endl;
     std::terminate();
@@ -80,3 +91,9 @@ GameContext::~GameContext() {
 GLFWwindow *GameContext::getWindow() const { return m_window; }
 
 Renderer &GameContext::getRenderer() { return m_renderer; }
+
+DebugOverlay &GameContext::getDebugOverlay() { return m_debugOverlay; }
+
+bool GameContext::isDebugOverlayEnabled() const {
+  return m_debugOverlayEnabled;
+}

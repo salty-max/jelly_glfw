@@ -15,6 +15,8 @@ mkdir deps >> %DEBUG_LOG% 2>&1
 mkdir deps\include >> %DEBUG_LOG% 2>&1
 mkdir deps\include\glad >> %DEBUG_LOG% 2>&1
 mkdir deps\include\KHR >> %DEBUG_LOG% 2>&1
+mkdir deps\include\GLFW >> %DEBUG_LOG% 2>&1
+mkdir deps\include\imgui >> %DEBUG_LOG% 2>&1
 mkdir deps\lib >> %DEBUG_LOG% 2>&1
 
 :: Clean existing build folder
@@ -123,6 +125,22 @@ echo Copying GLFW library...
 copy /Y deps\glfw\build\src\libglfw3.a deps\lib\libglfw3.a >> %DEBUG_LOG% 2>&1
 if not exist deps\lib\libglfw3.a (
     echo Error: GLFW library copy failed! Check debug.log for details.
+    pause
+    exit /b 1
+)
+
+:: Clone Dear ImGui repository
+echo Cloning Dear ImGui repository...
+git clone https://github.com/ocornut/imgui.git deps\imgui >> %DEBUG_LOG% 2>&1
+if not exist deps\imgui\imgui.cpp (
+    echo Error: Failed to clone Dear ImGui repository!
+    pause
+    exit /b 1
+)
+
+:: Verify Dear ImGui setup
+if not exist deps\imgui\imgui.cpp (
+    echo Error: Dear ImGui setup failed!
     pause
     exit /b 1
 )

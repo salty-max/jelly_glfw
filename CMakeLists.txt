@@ -22,10 +22,27 @@ set (SANDBOX_DIR ${CMAKE_SOURCE_DIR}/sandbox)
 # Include directories for the jelly library
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/deps/include)
+include_directories(${CMAKE_SOURCE_DIR}/deps/imgui)
+include_directories(${CMAKE_SOURCE_DIR}/deps/imgui/backends)
 
 # Add source files for the jelly library
 file(GLOB JELLY_SOURCES 
     ${CMAKE_SOURCE_DIR}/lib/jelly/*.cpp
+)
+
+# Include ImGui source files
+set(IMGUI_SOURCES
+    deps/imgui/imgui.cpp
+    deps/imgui/imgui_draw.cpp
+    deps/imgui/imgui_demo.cpp
+    deps/imgui/imgui_widgets.cpp
+    deps/imgui/imgui_tables.cpp
+)
+
+# Include ImGui GLFW source files
+set(IMGUI_GLFW_SOURCES
+    deps/imgui/backends/imgui_impl_glfw.cpp
+    deps/imgui/backends/imgui_impl_opengl3.cpp
 )
 
 # Define the jelly library
@@ -50,8 +67,16 @@ else ()
 endif()
 target_include_directories(glfw INTERFACE ${CMAKE_SOURCE_DIR}/deps/include)
 
+# Add ImGui Library
+add_library(imgui STATIC ${IMGUI_SOURCES})
+target_include_directories(imgui PUBLIC deps/imgui)
+
+# Add ImGui GLFW Library
+add_library(imgui_glfw STATIC ${IMGUI_GLFW_SOURCES})
+target_include_directories(imgui_glfw PUBLIC deps/imgui/backends)
+
 # Link the jelly library with dependencies
-target_link_libraries(jelly glad glfw)
+target_link_libraries(jelly glad glfw imgui imgui_glfw)
 
 # Define the sandbox executable
 add_executable(sandbox ${SANDBOX_DIR}/main.cpp)
@@ -61,14 +86,14 @@ file(COPY ${SANDBOX_DIR}/textures DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
 # Link the sandbox executable with the jelly library and dependencies
 if (WIN32)
-    target_link_libraries(sandbox jelly glad glfw opengl32) # OpenGL32 for Windows
+    target_link_libraries(sandbox jelly glad glfw imgui imgui_glfw opengl32) # OpenGL32 for Windows
 elseif (APPLE)
     find_library(COCOA_LIBRARY Cocoa REQUIRED)
     find_library(IOKIT_LIBRARY IOKit REQUIRED)
     find_library(COREVIDEO_LIBRARY CoreVideo REQUIRED)
     find_library(METAL_LIBRARY Metal REQUIRED)
-    target_link_libraries(sandbox jelly glad glfw ${COCOA_LIBRARY} ${IOKIT_LIBRARY} ${COREVIDEO_LIBRARY} ${METAL_LIBRARY})
+    target_link_libraries(sandbox jelly glad glfw imgui imgui_glfw ${COCOA_LIBRARY} ${IOKIT_LIBRARY} ${COREVIDEO_LIBRARY} ${METAL_LIBRARY})
 else ()
     find_package(X11 REQUIRED)
-    target_link_libraries(sandbox jelly glad glfw X11 pthread)
+    target_link_libraries(sandbox jelly glad glfw imgui imgui_glfw X11 pthread)
 endif()

@@ -10,6 +10,8 @@
         "-fdiagnostics-color=always",
         "-g",
         "-I${workspaceFolder/deps/include}",
+        "-I${workspaceFolder/deps/imgui}",
+        "-I${workspaceFolder/deps/imgui/backends}",
         "-I${workspaceFolder/include}",
         "-L${workspaceFolder/deps/lib}",
         "${file}",

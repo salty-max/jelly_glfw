@@ -4,7 +4,9 @@
             "name": "Win64",
             "includePath": [
                 "${workspaceFolder}/include/**",
-                "${workspaceFolder}/deps/include/**"
+                "${workspaceFolder}/deps/include/**",
+                "${workspaceFolder}/deps/imgui/**",
+                "${workspaceFolder}/deps/imgui/backends/**"
             ],
             "defines": [
                 "_DEBUG",
