@@ -7,6 +7,8 @@
 #define VAO_H
 
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
+
 #include <jelly/vbo.h>
 
 /**
@@ -24,6 +26,13 @@ public:
    * @brief Constructs a VAO object and generates a new VAO ID.
    */
   VAO();
+
+  /**
+   * @brief Initializes the VAO.
+   *
+   * This method generates a new VAO ID.
+   */
+  void Init();
 
   /**
    * @brief Binds the VAO.
@@ -56,6 +65,14 @@ public:
    */
   void LinkAttrib(VBO vbo, GLuint layout, GLuint numComponents, GLenum type,
                   GLsizeiptr stride, GLvoid *offset);
+
+  /**
+   * @brief Gets the ID of the VAO.
+   *
+   * @return The ID of the VAO.
+   */
+
+  const GLuint getID() const;
 };
 
 #endif // VAO_H

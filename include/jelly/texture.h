@@ -7,6 +7,7 @@
 #define TEXTURE_H
 
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
 
 #include <jelly/image.h>
 #include <jelly/shader.h>
@@ -20,6 +21,9 @@
 class Texture {
   GLuint m_id;
   GLenum m_type;
+  GLenum m_slot;
+  int m_width;
+  int m_height;
 
 public:
   /**
@@ -42,7 +46,7 @@ public:
    * @param uniform The name of the uniform variable in the shader.
    * @param unit The texture unit to set.
    */
-  void texUnit(Shader shader, const char *uniform, GLuint unit);
+  const void texUnit(Shader shader, const char *uniform, GLuint unit) const;
 
   /**
    * @brief Binds the texture.
@@ -64,6 +68,41 @@ public:
    * This method deletes the texture, freeing up the associated resources.
    */
   void Delete();
+
+  /**
+   * @brief Gets the width of the texture.
+   *
+   * @return The width of the texture.
+   */
+  int getWidth() const;
+
+  /**
+   * @brief Gets the height of the texture.
+   *
+   * @return The height of the texture.
+   */
+  int getHeight() const;
+
+  /**
+   * @brief Gets the ID of the texture.
+   *
+   * @return The ID of the texture.
+   */
+  const GLuint getID() const;
+
+  /**
+   * @brief Gets the type of the texture.
+   *
+   * @return The type of the texture.
+   */
+  const GLenum getType() const;
+
+  /**
+   * @brief Gets the slot of the texture.
+   *
+   * @return The slot of the texture.
+   */
+  const GLenum getSlot() const;
 };
 
 #endif // TEXTURE_H

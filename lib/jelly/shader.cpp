@@ -24,20 +24,9 @@ void Shader::compileErrors(unsigned int shader, const char *type) {
   }
 }
 
-Shader::Shader(const char *vertex_file_path, const char *fragment_file_path) {
-  const char *vertex_source = default_vertex_shader;
-  const char *fragment_source = default_fragment_shader;
+Shader::Shader() : m_id(0) {}
 
-  if (vertex_file_path) {
-    std::string vert_data = read_file(vertex_file_path);
-    vertex_source = vert_data.c_str();
-  }
-
-  if (fragment_file_path) {
-    std::string frag_data = read_file(fragment_file_path);
-    fragment_source = frag_data.c_str();
-  }
-
+void Shader::Compile(const char *vertex_source, const char *fragment_source) {
   GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vertexShader, 1, &vertex_source, nullptr);
   glCompileShader(vertexShader);

@@ -18,6 +18,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set (SANDBOX_DIR ${CMAKE_SOURCE_DIR}/sandbox)
+set(TESTS_DIR ${CMAKE_SOURCE_DIR}/tests)
 
 # Include directories for the jelly library
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -80,6 +81,15 @@ target_link_libraries(jelly glad glfw imgui imgui_glfw)
 
 # Define the sandbox executable
 add_executable(sandbox ${SANDBOX_DIR}/main.cpp)
+target_compile_definitions(sandbox PRIVATE $<$<CONFIG:Debug>:DEBUG>)
+
+# Add a test executable for unit tests
+file(GLOB TEST_SOURCES 
+    ${TESTS_DIR}/*.cpp
+)
+
+add_executable(tests ${TEST_SOURCES})
+target_link_libraries(tests jelly glad glfw imgui imgui_glfw)
 
 # Copy textures to the build directory
 file(COPY ${SANDBOX_DIR}/textures DESTINATION ${CMAKE_BINARY_DIR}/bin)
@@ -97,3 +107,9 @@ else ()
     find_package(X11 REQUIRED)
     target_link_libraries(sandbox jelly glad glfw imgui imgui_glfw X11 pthread)
 endif()
+
+# Enable testing
+enable_testing()
+
+# Add a basic test for CTest
+add_test(NAME jelly_tests COMMAND tests)

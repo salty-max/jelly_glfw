@@ -8,22 +8,40 @@
 
 #include <jelly/game_context.h>
 #include <jelly/sprite.h>
+#include <jelly/rectangle.h>
+#include <jelly/circle.h>
+#include <jelly/vec.h>
 
 int main() {
-  GameContext::init(1280, 720, "Sandbox", true);
+  GameContext::init(1280, 720, "Sandbox");
 
   auto &ctx = GameContext::getInstance();
 
-  // Create a sprite
-  Sprite psyduck("textures/psyduck.png", 1.0f, 1.0f);
+  Sprite martian("textures/martian.png");
+  martian.setPosition(Vec3<float>(100, 100, 1));
+  Sprite doomguy("textures/doomguy.png");
+  doomguy.setPosition(Vec3<float>(200, 100, 1));
+  Rectangle rect(Vec2<float>(20, 20), Vec2<float>(200, 200),
+                 Vec4<float>(1.0f, 0.0f, 0.0f, 1.0f));
+  Circle circle(Vec2<float>(300, 300), 32, Vec4<float>(0.0f, 1.0f, 0.0f, 1.0f));
 
   while (!glfwWindowShouldClose(ctx.getWindow())) {
+    auto &shapeRenderer = ctx.getShapeRenderer();
+    auto &spriteRenderer = ctx.getSpriteRenderer();
 
-    ctx.getRenderer().begin();
+    shapeRenderer.begin();
 
-    psyduck.draw();
+    shapeRenderer.submit(rect);
+    shapeRenderer.submit(circle);
 
-    ctx.getRenderer().end();
+    shapeRenderer.end();
+
+    // spriteRenderer.begin();
+
+    // spriteRenderer.submit(martian);
+    // spriteRenderer.submit(doomguy);
+
+    // spriteRenderer.end();
 
     if (ctx.isDebugOverlayEnabled()) {
       ctx.getDebugOverlay().beginFrame();

@@ -17,10 +17,15 @@ void GameContext::init(int windowWidth, int windowHeight, const char *title,
 }
 
 void GameContext::shutdown() {
+
   if (m_instance != nullptr) {
     if (m_instance->isDebugOverlayEnabled()) {
       m_instance->m_debugOverlay.shutdown();
     }
+
+    m_instance->m_spriteRenderer.shutdown();
+    m_instance->m_shapeRenderer.shutdown();
+
     delete m_instance;
     m_instance = nullptr;
   }
@@ -37,8 +42,11 @@ GameContext &GameContext::getInstance() {
 
 GameContext::GameContext(int windowWidth, int windowHeight, const char *title,
                          bool debugOverlayEnabled)
-    : m_renderer(windowWidth, windowHeight),
+    : m_spriteRenderer(windowWidth, windowHeight, 1.0f),
+      m_shapeRenderer(windowWidth, windowHeight, 1.0f),
       m_debugOverlayEnabled(debugOverlayEnabled) {
+  std::cout << "Initializing GLFW..." << std::endl;
+
   if (!glfwInit()) {
     std::cerr << "Failed to initialize GLFW" << std::endl;
     std::terminate();
@@ -46,8 +54,8 @@ GameContext::GameContext(int windowWidth, int windowHeight, const char *title,
 
   std::cout << "Using GLFW version " << glfwGetVersionString() << std::endl;
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   m_window =
@@ -70,17 +78,30 @@ GameContext::GameContext(int windowWidth, int windowHeight, const char *title,
     std::terminate();
   }
 
-  glViewport(0, 0, windowWidth, windowHeight);
+  int width, height;
+  glfwGetFramebufferSize(m_window, &width, &height);
+  glViewport(0, 0, width, height);
 
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_CULL_FACE);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  m_renderer.init_shaders();
+  glEnable(GL_DEBUG_OUTPUT);
+  glDebugMessageCallback(
+      [](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+         const GLchar *message, const void *userParam) {
+        std::cerr << "GL Debug: " << message << std::endl;
+      },
+      nullptr);
 
   std::cout << "Open GL loaded succesfully" << std::endl;
   std::cout << "\t Version: " << glGetString(GL_VERSION) << std::endl;
   std::cout << "\t Vendor: " << glGetString(GL_VENDOR) << std::endl;
   std::cout << "\t Renderer: " << glGetString(GL_RENDERER) << std::endl;
+
+  m_spriteRenderer.init();
+  m_shapeRenderer.init();
 }
 
 GameContext::~GameContext() {
@@ -90,7 +111,21 @@ GameContext::~GameContext() {
 
 GLFWwindow *GameContext::getWindow() const { return m_window; }
 
-Renderer &GameContext::getRenderer() { return m_renderer; }
+int GameContext::getWindowWidth() const {
+  int width, height;
+  glfwGetWindowSize(m_window, &width, &height);
+  return width;
+}
+
+int GameContext::getWindowHeight() const {
+  int width, height;
+  glfwGetWindowSize(m_window, &width, &height);
+  return height;
+}
+
+SpriteRenderer &GameContext::getSpriteRenderer() { return m_spriteRenderer; }
+
+ShapeRenderer &GameContext::getShapeRenderer() { return m_shapeRenderer; }
 
 DebugOverlay &GameContext::getDebugOverlay() { return m_debugOverlay; }
 

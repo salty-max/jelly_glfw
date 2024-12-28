@@ -1,59 +1,33 @@
 #include <jelly/sprite.h>
 #include <jelly/game_context.h>
 
-Sprite::Sprite(const char *texturePath, float width, float height)
-    : m_texture(texturePath, GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA,
-                GL_UNSIGNED_BYTE),
-      m_vbo(nullptr, 0), m_ebo(nullptr, 0) {
-  // Vertex data
-  GLfloat vertices[32] = {
-      // Position         // Color          // Texture coordinates
-      -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, // Lower left
-      -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, // Upper left
-      0.5f,  0.5f,  0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Upper right
-      0.5f,  -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f  // Lower right
-  };
-
-  // Indices
-  GLuint indices[] = {
-      0, 1, 2, // Upper left triangle
-      2, 3, 0  // Lower right triangle
-  };
-
-  // Set up VAO, VBO, and EBO
-  m_vao.Bind();
-  m_vbo = VBO(vertices, sizeof(vertices));
-  m_ebo = EBO(indices, sizeof(indices));
-
-  m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, 8 * sizeof(GLfloat), (void *)0);
-  m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, 8 * sizeof(GLfloat),
-                   (void *)(3 * sizeof(GLfloat)));
-  m_vao.LinkAttrib(m_vbo, 2, 2, GL_FLOAT, 8 * sizeof(GLfloat),
-                   (void *)(6 * sizeof(GLfloat)));
-
-  m_vao.Unbind();
-  m_vbo.Unbind();
-  m_ebo.Unbind();
-
-  // Set texture uniform
-  m_texture.texUnit(GameContext::getInstance().getRenderer().getDefaultShader(),
-                    "tex0", 0);
+Sprite::Sprite(const char *texturePath, Vec4<float> color, int width,
+               int height)
+    : m_texture(texturePath) {
+  m_width = width == 0 ? m_texture.getWidth() : width;
+  m_height = height == 0 ? m_texture.getHeight() : height;
 }
 
-Sprite::~Sprite() {
-  m_vao.Delete();
-  m_vbo.Delete();
-  m_ebo.Delete();
-  m_texture.Delete();
-}
+Sprite::~Sprite() { m_texture.Delete(); }
 
-void Sprite::draw() const {
-  auto &renderer = GameContext::getInstance().getRenderer();
-  const Shader &shader = renderer.getDefaultShader();
+void Sprite::setPosition(const Vec3<float> &position) { m_position = position; }
 
-  shader.Activate();
-  m_texture.Bind();
-  m_vao.Bind();
+void Sprite::setScale(const Vec3<float> &scale) { m_scale = scale; }
 
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-}
+void Sprite::setRotation(const Vec3<float> &rotation) { m_rotation = rotation; }
+
+const Vec3<float> &Sprite::getPosition() const { return m_position; }
+
+const Vec3<float> &Sprite::getScale() const { return m_scale; }
+
+const Vec3<float> &Sprite::getRotation() const { return m_rotation; }
+
+float Sprite::getWidth() const { return m_width; }
+
+float Sprite::getHeight() const { return m_height; }
+
+Vec2<float> Sprite::getSize() const { return Vec2<float>(m_width, m_height); }
+
+const Texture &Sprite::getTexture() const { return m_texture; }
+
+const Vec4<float> &Sprite::getColor() const { return m_color; }

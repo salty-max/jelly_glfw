@@ -9,6 +9,7 @@
 #define EBO_H
 
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
 
 /**
  * @class EBO
@@ -19,11 +20,23 @@ class EBO {
 
 public:
   /**
-   * @brief Constructs an EBO and initializes it with the given indices.
+   * @brief Constructs an EBO object.
+   */
+  EBO();
+
+  /**
+   * @brief Initializes the EBO with the given indices.
    * @param indices A pointer to the indices data.
    * @param size The size of the indices data in bytes.
    */
-  EBO(GLuint *indices, GLsizeiptr size);
+  void Init(const void *indices, GLsizeiptr size);
+
+  /**
+   * @brief Updates the EBO with new indices.
+   * @param indices A pointer to the indices data.
+   * @param size The size of the indices data in bytes.
+   */
+  void Update(const void *indices, GLsizeiptr size);
 
   /**
    * @brief Binds the EBO.
@@ -39,6 +52,12 @@ public:
    * @brief Deletes the EBO.
    */
   void Delete();
+
+  /**
+   * @brief Gets the ID of the EBO.
+   * @return The ID of the EBO.
+   */
+  const GLuint getID() const;
 };
 
 #endif // EBO_H

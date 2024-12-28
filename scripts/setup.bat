@@ -16,7 +16,7 @@ mkdir deps\include >> %DEBUG_LOG% 2>&1
 mkdir deps\include\glad >> %DEBUG_LOG% 2>&1
 mkdir deps\include\KHR >> %DEBUG_LOG% 2>&1
 mkdir deps\include\GLFW >> %DEBUG_LOG% 2>&1
-mkdir deps\include\imgui >> %DEBUG_LOG% 2>&1
+mkdir deps\imgui >> %DEBUG_LOG% 2>&1
 mkdir deps\lib >> %DEBUG_LOG% 2>&1
 
 :: Clean existing build folder
@@ -67,7 +67,7 @@ cd deps\glad
 
 :: Generate Glad files
 echo Generating Glad files...
-python -m glad --api=gl:core=3.3 --out-path=glad_build >> %DEBUG_LOG% 2>&1
+python -m glad --api=gl:core=4.6 --out-path=glad_build >> %DEBUG_LOG% 2>&1
 if %errorlevel% neq 0 (
     echo Error: Glad generation failed! Check debug.log for details.
     pause
@@ -174,7 +174,14 @@ cmake -S . -B build -G "MinGW Makefiles" >> %DEBUG_LOG% 2>&1
 
 :: Build project
 echo Building project...
-cmake --build build --config Debug >> %DEBUG_LOG% 2>&1
+cmake --build build >> %DEBUG_LOG% 2>&1
+
+:: Verify build
+if not exist build\bin\sandbox.exe (
+    echo Error: Build failed! Check debug.log for details.
+    pause
+    exit /b 1
+)
 
 echo Setup complete!
 pause

@@ -6,7 +6,8 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
-#include <jelly/renderer.h>
+#include <jelly/sprite_renderer.h>
+#include <jelly/shape_renderer.h>
 #include <jelly/debug_overlay.h>
 
 class GameContext {
@@ -15,7 +16,8 @@ class GameContext {
   ~GameContext();
 
   GLFWwindow *m_window;
-  Renderer m_renderer;
+  SpriteRenderer m_spriteRenderer;
+  ShapeRenderer m_shapeRenderer;
   DebugOverlay m_debugOverlay;
 
   bool m_debugOverlayEnabled;
@@ -29,7 +31,10 @@ public:
   static GameContext &getInstance();
 
   GLFWwindow *getWindow() const;
-  Renderer &getRenderer();
+  int getWindowWidth() const;
+  int getWindowHeight() const;
+  SpriteRenderer &getSpriteRenderer();
+  ShapeRenderer &getShapeRenderer();
   DebugOverlay &getDebugOverlay();
   bool isDebugOverlayEnabled() const;
 };

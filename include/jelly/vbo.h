@@ -2,6 +2,7 @@
 #define VBO_H
 
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
 
 /**
  * @class VBO
@@ -14,12 +15,25 @@ class VBO {
 
 public:
   /**
-   * @brief Constructs a VBO and initializes it with the given vertices.
+   * @brief Constructs a VBO object and generates a new VBO ID.
+   */
+  VBO();
+
+  /**
+   * @brief Constructs a VBO object and initializes it with the given vertices.
    *
    * @param vertices A pointer to the array of vertices.
    * @param size The size of the vertices array in bytes.
    */
-  VBO(GLfloat *vertices, GLsizeiptr size);
+  void Init(const void *vertices, GLsizeiptr size);
+
+  /**
+   * @brief Updates the VBO with new vertices.
+   *
+   * @param vertices A pointer to the array of vertices.
+   * @param size The size of the vertices array in bytes.
+   */
+  void Update(const void *vertices, GLsizeiptr size);
 
   /**
    * @brief Binds the VBO.
@@ -41,6 +55,13 @@ public:
    * This method deletes the VBO and frees the associated resources.
    */
   void Delete();
+
+  /**
+   * @brief Gets the ID of the VBO.
+   *
+   * @return The ID of the VBO.
+   */
+  const GLuint getID() const;
 };
 
 #endif
