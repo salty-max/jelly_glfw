@@ -55,7 +55,7 @@ jobs:
           cmake --build deps/glfw/build --config Release
           cp deps/glfw/build/src/libglfw3.a deps/lib/libglfw3.a
           cp -r deps/glfw/include/GLFW deps/include/
-          git clone https://github.com/ocornut/imgui.git deps\imgui
+          git clone https://github.com/ocornut/imgui.git deps/imgui
 
       # Set up dependencies on macOS
       - name: Set up dependencies (macOS)
