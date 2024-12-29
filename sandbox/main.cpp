@@ -13,7 +13,7 @@
 #include <jelly/vec.h>
 
 int main() {
-  GameContext::init(1280, 720, "Sandbox");
+  GameContext::init(640, 480, "Sandbox");
 
   auto &ctx = GameContext::getInstance();
 
@@ -21,27 +21,44 @@ int main() {
   martian.setPosition(Vec3<float>(100, 100, 1));
   Sprite doomguy("textures/doomguy.png");
   doomguy.setPosition(Vec3<float>(200, 100, 1));
-  Rectangle rect(Vec2<float>(20, 20), Vec2<float>(200, 200),
-                 Vec4<float>(1.0f, 0.0f, 0.0f, 1.0f));
-  Circle circle(Vec2<float>(300, 300), 32, Vec4<float>(0.0f, 1.0f, 0.0f, 1.0f));
+
+  Circle circle(Vec2<float>(300, 300), 100.0f, false,
+                Vec4<float>(0.0f, 1.0f, 0.0f, 1.0f));
+
+  int wWidth = ctx.getWindowWidth();
+  int wHeight = ctx.getWindowHeight();
+  int wallThickness = 20;
+
+  Rectangle leftWall(Vec2<float>(0, 0),
+                     Vec2<float>(wallThickness, wHeight - wallThickness),
+                     Vec4<float>(1.0f, 0.0f, 0.0f, 1.0f), false);
+
+  Rectangle rightWall(Vec2<float>(wWidth - wallThickness, wallThickness),
+                      Vec2<float>(wallThickness, wHeight),
+                      Vec4<float>(1.0f, 1.0f, 0.0f, 1.0f), false);
+
+  Rectangle topWall(Vec2<float>(wallThickness, 0),
+                    Vec2<float>(wWidth - wallThickness, wallThickness),
+                    Vec4<float>(1.0f, 0.0f, 1.0f, 1.0f), false);
+
+  Rectangle bottomWall(Vec2<float>(0, wHeight - wallThickness),
+                       Vec2<float>(wWidth - wallThickness, wallThickness),
+                       Vec4<float>(0.0f, 1.0f, 1.0f, 1.0f), false);
 
   while (!glfwWindowShouldClose(ctx.getWindow())) {
-    auto &shapeRenderer = ctx.getShapeRenderer();
-    auto &spriteRenderer = ctx.getSpriteRenderer();
+    auto &renderer = ctx.getRenderer();
 
-    shapeRenderer.begin();
+    renderer.begin();
 
-    shapeRenderer.submit(rect);
-    shapeRenderer.submit(circle);
+    renderer.drawCircle(circle);
+    renderer.drawRect(leftWall);
+    renderer.drawRect(rightWall);
+    renderer.drawSprite(doomguy);
+    renderer.drawRect(topWall);
+    renderer.drawRect(bottomWall);
+    renderer.drawSprite(martian);
 
-    shapeRenderer.end();
-
-    // spriteRenderer.begin();
-
-    // spriteRenderer.submit(martian);
-    // spriteRenderer.submit(doomguy);
-
-    // spriteRenderer.end();
+    renderer.end();
 
     if (ctx.isDebugOverlayEnabled()) {
       ctx.getDebugOverlay().beginFrame();

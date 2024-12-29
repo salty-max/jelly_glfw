@@ -1,6 +1,7 @@
 #ifndef VEC_H
 #define VEC_H
 
+#include <ostream>
 #include <cmath>
 #include <stdexcept>
 
@@ -75,6 +76,9 @@ public:
 
   T &operator[](size_t index);
   const T &operator[](size_t index) const;
+
+  template <typename U>
+  friend std::ostream &operator<<(std::ostream &os, const Vec2<U> &v);
 };
 
 /**
@@ -149,6 +153,9 @@ public:
 
   T &operator[](size_t index);
   const T &operator[](size_t index) const;
+
+  template <typename U>
+  friend std::ostream &operator<<(std::ostream &os, const Vec3<U> &v);
 };
 
 /**
@@ -224,6 +231,9 @@ public:
 
   T &operator[](size_t index);
   const T &operator[](size_t index) const;
+
+  template <typename U>
+  friend std::ostream &operator<<(std::ostream &os, const Vec4<U> &v);
 };
 
 #endif // VEC_H

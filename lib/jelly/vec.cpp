@@ -79,6 +79,12 @@ template <typename T> const T &Vec2<T>::operator[](size_t index) const {
   return (&x)[index]; // Use pointer arithmetic to access components
 }
 
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const Vec2<T> &v) {
+  os << "(" << v.x << ", " << v.y << ")";
+  return os;
+}
+
 // Vec3 implementation
 template <typename T> Vec3<T>::Vec3() : x(0), y(0), z(0) {}
 
@@ -174,6 +180,12 @@ template <typename T> const T &Vec3<T>::operator[](size_t index) const {
   return (&x)[index]; // Use pointer arithmetic to access components
 }
 
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const Vec3<T> &v) {
+  os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+  return os;
+}
+
 // Vec4 implementation
 template <typename T> Vec4<T>::Vec4() : x(0), y(0), z(0), w(0) {}
 
@@ -261,6 +273,12 @@ template <typename T> const T &Vec4<T>::operator[](size_t index) const {
   if (index >= 4)
     throw std::out_of_range("Vec4 index out of range");
   return (&x)[index]; // Use pointer arithmetic to access components
+}
+
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const Vec4<T> &v) {
+  os << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
+  return os;
 }
 
 // Template instantiations

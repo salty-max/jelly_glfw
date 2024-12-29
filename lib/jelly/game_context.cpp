@@ -23,8 +23,7 @@ void GameContext::shutdown() {
       m_instance->m_debugOverlay.shutdown();
     }
 
-    m_instance->m_spriteRenderer.shutdown();
-    m_instance->m_shapeRenderer.shutdown();
+    m_instance->m_renderer.shutdown();
 
     delete m_instance;
     m_instance = nullptr;
@@ -42,8 +41,7 @@ GameContext &GameContext::getInstance() {
 
 GameContext::GameContext(int windowWidth, int windowHeight, const char *title,
                          bool debugOverlayEnabled)
-    : m_spriteRenderer(windowWidth, windowHeight, 1.0f),
-      m_shapeRenderer(windowWidth, windowHeight, 1.0f),
+    : m_renderer(windowWidth, windowHeight, 1.0f),
       m_debugOverlayEnabled(debugOverlayEnabled) {
   std::cout << "Initializing GLFW..." << std::endl;
 
@@ -100,8 +98,7 @@ GameContext::GameContext(int windowWidth, int windowHeight, const char *title,
   std::cout << "\t Vendor: " << glGetString(GL_VENDOR) << std::endl;
   std::cout << "\t Renderer: " << glGetString(GL_RENDERER) << std::endl;
 
-  m_spriteRenderer.init();
-  m_shapeRenderer.init();
+  m_renderer.init();
 }
 
 GameContext::~GameContext() {
@@ -123,9 +120,7 @@ int GameContext::getWindowHeight() const {
   return height;
 }
 
-SpriteRenderer &GameContext::getSpriteRenderer() { return m_spriteRenderer; }
-
-ShapeRenderer &GameContext::getShapeRenderer() { return m_shapeRenderer; }
+Renderer2D &GameContext::getRenderer() { return m_renderer; }
 
 DebugOverlay &GameContext::getDebugOverlay() { return m_debugOverlay; }
 

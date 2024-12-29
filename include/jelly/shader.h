@@ -14,106 +14,94 @@
 /**
  * @brief Default vertex shader source code.
  */
-constexpr const char *default_vertex_shader = R"(
-    #version 460 core
-    layout (location = 0) in vec3 a_pos;
-    layout (location = 1) in vec2 a_uvs;
+constexpr const char *quad_vertex_shader = R"(
+   #version 460 core
+    layout(location = 0) in vec2 a_pos;
+    layout(location = 1) in vec2 a_uv;
+    layout(location = 2) in vec4 a_color;
+    layout(location = 3) in float a_texIndex;
 
-    out vec2 v_uvs;
+    out vec2 v_uv;
+    out vec4 v_color;
+    out float v_texIndex;
 
     uniform mat4 projection;
-    uniform mat4 view;
 
     void main() {
-        v_uvs = a_uvs;
-        gl_Position = projection * view * vec4(a_pos, 1.0);
+        v_uv = a_uv;
+        v_color = a_color;
+        v_texIndex = a_texIndex;
+        gl_Position = projection * vec4(a_pos, 0.0, 1.0);
     }
+
 )";
 
 /**
  * @brief Default fragment shader source code.
  */
-constexpr const char *default_fragment_shader = R"(
+constexpr const char *quad_fragment_shader = R"(
     #version 460 core
-    layout (location = 0) out vec4 frag_color;
+    out vec4 fragColor;
 
-    in vec2 v_uvs;
+    in vec2 v_uv;
+    in vec4 v_color;
+    in float v_texIndex;
 
-    layout (binding = 0) uniform sampler2D texture_id;
-    layout (location = 1) uniform vec4 color;
+    uniform sampler2D textures[32]; // Support up to 32 texture slots
 
     void main() {
-        frag_color = texture(texture_id, v_uvs) * color;
+        if (v_texIndex < 0.0) { // Untextured
+            fragColor = v_color;
+        } else { // Textured
+            int index = int(v_texIndex);
+            fragColor = texture(textures[index], v_uv) * v_color;
+        }
     }
+
 )";
 
-/**
- * @brief Batch quad vertex shader source code.
- */
-constexpr const char *batch_quad_vertex_shader = R"(
+constexpr const char *circle_vertex_shader = R"(
     #version 460 core
-    layout (location = 0) in vec2 a_pos;
-    layout (location = 1) in vec2 a_uvs;
-    layout (location = 2) in vec4 a_color;
 
-    out vec2 v_uvs;
-    out vec4 v_color;
+    layout(location = 0) in vec2 a_pos;      // Position of the vertex
+    layout(location = 1) in vec2 a_uv;       // UV coordinates (not used here)
+    layout(location = 2) in vec4 a_color;    // Per-instance color
+    layout(location = 3) in vec2 a_center;   // Per-instance circle center
+    layout(location = 4) in float a_radius;  // Per-instance circle radius
+
+    out vec2 fragUV;       // Pass normalized position
+    out vec4 fragColor;    // Pass color to fragment shader
+    out vec2 fragCenter;   // Pass transformed circle center
+    out float fragRadius;  // Pass radius to fragment shader
 
     uniform mat4 projection;
 
     void main() {
-        v_color = a_color;
-        v_uvs = a_uvs;
-        gl_Position = projection * vec4(a_pos, 0.0, 1.0);
+        vec4 worldPos = projection * vec4(a_pos, 0.0, 1.0);
+        fragUV = a_pos;           // Object-space coordinates
+        fragColor = a_color;      // Circle color
+        fragCenter = (projection * vec4(a_center, 0.0, 1.0)).xy; // Transformed center
+        fragRadius = a_radius;    // Circle radius (unchanged)
+
+        gl_Position = worldPos;
     }
 )";
 
-/**
- * @brief Batch quad fragment shader source code.
- */
-constexpr const char *batch_quad_fragment_shader = R"(
+constexpr const char *circle_fragment_shader = R"(
     #version 460 core
-    layout (location = 0) out vec4 o_color;
 
-    in vec2 v_uvs;
-    in vec4 v_color;
+    in vec2 fragUV;       // Object-space UV coordinates
+    in vec4 fragColor;    // Circle color
+    in vec2 fragCenter;   // Transformed circle center
+    in float fragRadius;  // Circle radius
 
-    layout (binding = 0) uniform sampler2D texture_slot;
+    out vec4 fragColorOut;  // Output color
 
     void main() {
-        o_color = texture(texture_slot, v_uvs) * v_color;
-    }
-)";
-
-/**
- * @brief Shape vertex shader source code.
- */
-constexpr const char *shape_vertex_shader = R"(
-    #version 460 core
-    layout (location = 0) in vec2 a_pos;
-    layout (location = 1) in vec4 a_color;
-
-    out vec4 v_color;
-
-    uniform mat4 projection;
-
-    void main() {
-        v_color = a_color;
-        gl_Position = projection * vec4(a_pos.xy, 0.0, 1.0);
-    }
-)";
-
-/**
- * @brief Shape fragment shader source code.
- */
-constexpr const char *shape_fragment_shader = R"(
-    #version 460 core
-    layout (location = 0) out vec4 frag_color;
-
-    in vec4 v_color;
-
-    void main() {
-        frag_color = v_color;
+        float dist = length(fragUV - fragCenter);  // Distance to the center
+        float alpha = smoothstep(fragRadius - 0.01, fragRadius, dist); // Anti-aliasing
+        if (dist > fragRadius) discard; // Outside the circle boundary
+        fragColorOut = vec4(fragColor.rgb, 1.0);
     }
 )";
 

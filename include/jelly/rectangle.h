@@ -3,18 +3,13 @@
 
 #include <jelly/shape.h>
 
-/**
- * @brief Rectangle shape class.
- *
- * Represents a rectangle with a position, size, and color.
- */
 class Rectangle : public Shape {
   Vec2<float> m_size;
 
 public:
   Rectangle(const Vec2<float> &position, const Vec2<float> &size,
-            const Vec4<float> &color)
-      : Shape(position, color), m_size(size) {}
+            const Vec4<float> &color, bool filled = true)
+      : Shape(position, color, filled), m_size(size) {}
 
   std::vector<Vec2<float>> getVertices() const override {
     return {
@@ -26,10 +21,19 @@ public:
   }
 
   std::vector<GLuint> getIndices(GLuint startIndex) const override {
-    return {
-        startIndex, startIndex + 1, startIndex + 2,
-        startIndex, startIndex + 2, startIndex + 3,
-    };
+    if (m_filled) {
+      return {
+          startIndex, startIndex + 1, startIndex + 2,
+          startIndex, startIndex + 2, startIndex + 3,
+      };
+    } else {
+      return {
+          startIndex,     startIndex + 1, // Bottom edge
+          startIndex + 1, startIndex + 2, // Right edge
+          startIndex + 2, startIndex + 3, // Top edge
+          startIndex + 3, startIndex      // Left edge
+      };
+    }
   }
 };
 
